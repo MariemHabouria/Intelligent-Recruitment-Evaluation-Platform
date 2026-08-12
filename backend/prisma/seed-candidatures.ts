@@ -242,13 +242,14 @@ const CANDIDATS: CandidatSeed[] = [
   },
 
   {
-    nom: 'Gharbi', prenom: 'Karim', email: 'karim.gharbi@dev.tn',
-    telephone: '+216 50 800 888',
-    cvUrl: '/uploads/cv/gharbi_karim.pdf',
-    cvTexte: `Developpeur Full Stack avec 6 ans d'experience. Stack principale : React, Node.js, TypeScript, PostgreSQL, Docker. Experience en architecture microservices, CI/CD GitLab, et deploiement cloud Azure. Developpeur senior dans une startup fintech tunisienne. Contribue a des projets open-source. Certifie AWS Solutions Architect. Diplome ENIT Tunis.`,
-    scoreGlobal: 93, scoreExp: 90,
-    competencesDetectees: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'REST API', 'Docker', 'CI/CD'],
-    competencesManquantes: ['Python', 'FastAPI', 'GraphQL', 'Redis'],
+
+  nom: 'Gharbi', prenom: 'Karim', email: 'karim.gharbi@dev.tn',
+  telephone: '+216 50 800 888',
+  cvUrl: '/uploads/cv/gharbi_karim.pdf',
+  cvTexte: `Developpeur Full Stack avec 6 ans d'experience. Stack principale : React, Node.js, TypeScript, PostgreSQL, Docker. Experience en architecture microservices, CI/CD GitLab, et deploiement cloud Azure. Developpeur senior dans une startup fintech tunisienne. A initie et deploye un module de scoring credit base sur Python et Scikit-Learn en production, en collaboration avec l'equipe data. Contribue a des projets open-source. Certifie AWS Solutions Architect. Diplome ENIT Tunis.`,
+  scoreGlobal: 93, scoreExp: 90,
+  competencesDetectees: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'REST API', 'Docker', 'CI/CD', 'Python', 'Scikit-Learn'],
+  competencesManquantes: ['FastAPI', 'GraphQL', 'Redis'],
     statut: 'FICHE_RECUE',
     consentementRGPD: true, consentementIA: true,
     offreCible: 'Développeur Full Stack',
@@ -279,13 +280,13 @@ const CANDIDATS: CandidatSeed[] = [
   },
 
   {
-    nom: 'Haddad', prenom: 'Mehdi', email: 'mehdi.haddad@dev-freelance.tn',
-    telephone: '+216 55 444 004',
-    cvUrl: '/uploads/cv/haddad_mehdi.pdf',
-    cvTexte: `Developpeur Full Stack freelance avec 5 ans d'experience sur des projets varies (e-commerce, ERP PME, applications SaaS). Stack : React, Vue.js, Node.js, Python, PostgreSQL, MongoDB. Maitrise Docker, Kubernetes, pipelines CI/CD GitLab/GitHub Actions. Certifie Google Cloud Professional. Interet pour le machine learning applique.`,
-    scoreGlobal: 85, scoreExp: 83,
-    competencesDetectees: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'REST API', 'Python', 'Docker', 'CI/CD', 'MongoDB', 'GraphQL'],
-    competencesManquantes: ['FastAPI', 'Redis'],
+  nom: 'Haddad', prenom: 'Mehdi', email: 'mehdi.haddad@dev-freelance.tn',
+  telephone: '+216 55 444 004',
+  cvUrl: '/uploads/cv/haddad_mehdi.pdf',
+  cvTexte: `Developpeur Full Stack freelance avec 5 ans d'experience sur des projets varies (e-commerce, ERP PME, applications SaaS). Stack : React, Vue.js, Node.js, Python, PostgreSQL, MongoDB. Maitrise Docker, Kubernetes, pipelines CI/CD GitLab/GitHub Actions. A developpe un pipeline FastAPI de classification de tickets support avec Scikit-Learn et Pandas pour un client SaaS. Certifie Google Cloud Professional.`,
+  scoreGlobal: 85, scoreExp: 83,
+  competencesDetectees: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'REST API', 'Python', 'Docker', 'CI/CD', 'MongoDB', 'GraphQL', 'FastAPI', 'Scikit-Learn', 'Pandas'],
+  competencesManquantes: ['Redis'],
     statut: 'FICHE_ENVOYEE',
     consentementRGPD: true, consentementIA: true,
     offreCible: 'Développeur Full Stack',
@@ -455,23 +456,22 @@ const CANDIDATS: CandidatSeed[] = [
   },
 ];
 // CANDIDATURES MATCHING INVERSE 
-
 const MATCHING_INVERSE: MatchingInverseSeed[] = [
   {
     emailCandidat: 'karim.gharbi@dev.tn',
-    offreCible:    'Ingenieur IA / Machine Learning',
+    offreCible:    'Ingénieur IA / Machine Learning',
     scoreGlobal:   79,
     scoreExp:      77,
   },
   {
     emailCandidat: 'mehdi.haddad@dev-freelance.tn',
-    offreCible:    'Ingenieur IA / Machine Learning',
+    offreCible:    'Ingénieur IA / Machine Learning',
     scoreGlobal:   76,
     scoreExp:      74,
   },
   {
     emailCandidat: 'anis.khadhraoui@business-dev.tn',
-    offreCible:    'Directeur General Adjoint',
+    offreCible:    'Directeur Général Adjoint',
     scoreGlobal:   71,
     scoreExp:      73,
   },

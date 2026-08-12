@@ -1,191 +1,182 @@
-# Plateforme RH
+# Plateforme Intelligente de Recrutement et d'Évaluation RH
 
-Cette plateforme gère le recrutement et les RH avec de l'intelligence artificielle : analyse des CV, matching offres/candidats, planification des entretiens, validation des contrats, et tableaux de bord.
+> Plateforme full-stack de gestion du recrutement et des ressources humaines, couvrant l'intégralité du cycle de vie de l'embauche — de la demande de recrutement jusqu'à l'évaluation de la période d'essai — avec un moteur de scoring de CV assisté par IA et une automatisation des workflows.
 
-## Fonctionnalités principales
+[![Node.js](https://img.shields.io/badge/Node.js-20-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![React](https://img.shields.io/badge/React-Vite-61DAFB?logo=react&logoColor=white)](https://react.dev)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![n8n](https://img.shields.io/badge/n8n-workflow--automation-EA4B71?logo=n8n&logoColor=white)](https://n8n.io)
+[![Docker](https://img.shields.io/badge/Docker-containerized-2496ED?logo=docker&logoColor=white)](https://www.docker.com)
+[![CI](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](https://github.com/features/actions)
+[![License](https://img.shields.io/badge/license-Unlicensed-lightgrey)](#licence)
 
-- **Authentification & utilisateurs** — gestion des comptes et des rôles (`authController`, `user.controller`)
-- **Gestion des offres d'emploi** — création et suivi des offres (`offreController`)
-- **Candidatures** — dépôt et suivi des candidatures (`candidatureController`, `uploadController`)
-- **Matching inverse** — mise en correspondance candidat → offres compatibles (`matchingInverseController`)
-- **Scoring & configuration IA** — paramétrage des modèles de scoring des CV (`scoringConfigController`)
-- **Entretiens** — planification interne et publique des entretiens (`entretienController`, `publicEntretienController`)
-- **Évaluation période d'essai** — circuit d'évaluation PE (`evaluationPEController`)
-- **Contrats & avenants** — gestion des contrats (`contratController`)
-- **Circuit de validation** — configuration du circuit de recrutement (`circuitConfigController`)
-- **Tableaux de bord** — KPIs et indicateurs RH (`dashboardController`)
-- **Demandes internes** — gestion des demandes RH (`demandeController`)
-- **Offres d'emploi (jobs)** — module dédié aux annonces
-- **Journal d'audit** — traçabilité des actions (`auditLogController`)
+🇬🇧 [Read in English](./README.md)
+
+---
+
+## Table des matières
+
+- [Aperçu](#aperçu)
+- [Architecture](#architecture)
+- [Stack technique](#stack-technique)
+- [Rôles](#rôles)
+- [Modules principaux](#modules-principaux)
+- [Démarrage](#démarrage)
+- [CI/CD](#cicd)
+- [Licence](#licence)
+
+---
+
+## Aperçu
+
+La plateforme digitalise et automatise les processus RH :
+
+- Validation hiérarchique multi-niveaux des demandes de recrutement, avec routage dynamique selon le niveau du poste
+- Parsing, scoring et classification des candidatures assistés par IA
+- Parcours candidat public, sans compte (candidature, fiche de renseignement, self-scheduling d'entretien)
+- Génération, signature et gestion des avenants de contrat
+- Évaluation de la période d'essai avec un modèle de confidentialité à deux niveaux
+- Tableaux de bord KPI scopés par rôle et journal d'audit complet
+- Relances/escalades automatisées et pipeline de détection de dérive + ré-entraînement IA
 
 ## Architecture
 
-Projet full-stack composé de 3 services principaux :
+Architecture en couches (N-tier) — **Routes → Controllers → Services → Prisma ORM → PostgreSQL** — plutôt qu'un MVC classique, répartie sur quatre services déployables indépendamment.
 
-| Service | Stack | Rôle |
-|---|---|---|
-| `backend/` | Node.js / Express | API métier, auth, gestion RH |
-| `frontend/` | React (Vite) | Interface utilisateur |
-| `ia_service/` | FastAPI (Python) | Scoring CV, matching offres/candidats |
-| `n8n/workflows/` | n8n | Automatisation (circuit de validation, relances, rappels) |
-
-Base de données : PostgreSQL (Neon), file/queue : Redis + BullMQ.
-
-## Module IA
-
-Le `ia_service` est un microservice Python (FastAPI) indépendant du backend. Il extrait automatiquement les informations d'un CV PDF (compétences, expérience, formation, langues...), puis calcule un score de compatibilité CV/offre sur 100 grâce à un modèle hybride M3 : 55% règles expertes pondérées (compétences, expérience, formation...) + 45% embeddings sémantiques (SentenceTransformer). Il gère aussi le matching inverse, qui identifie les meilleurs candidats disponibles pour une offre donnée.
-
-## Installation
-
-### Prérequis
-- Node.js 18+
-- Python 3.10+ (avec `venv` pour l'environnement virtuel)
-- PostgreSQL (ou compte Neon)
-- Docker & Docker Compose (optionnel)
-
-### 1. Cloner le repo
-```bash
-git clone https://github.com/MariemHabouria/Plateforme-Intelligente-Recrutement-Evaluation.git
-cd Plateforme-Intelligente-Recrutement-Evaluation
+```
+┌─────────────┐      ┌──────────────┐      ┌──────────────────┐
+│  Frontend   │ ───▶ │  Backend API │ ───▶ │   PostgreSQL      │
+│  (React)    │      │ (Node/Express│      │   (via Prisma,    │
+└─────────────┘      │   /Prisma)   │      │   hébergé Neon)   │
+                      └──────┬───────┘      └──────────────────┘
+                             │
+                 ┌───────────┼────────────┐
+                 ▼                        ▼
+        ┌──────────────────┐      ┌──────────────┐
+        │  Microservice IA │      │     n8n      │
+        │  (FastAPI)       │      │  (workflows) │
+        └──────────────────┘      └──────────────┘
 ```
 
-### 2. Backend
+| Service | Stack | Responsabilité |
+|---|---|---|
+| **Backend API** | Node.js, TypeScript, Express, Prisma | Logique métier centrale, auth, circuits de validation |
+| **Microservice IA** | Python, FastAPI, scikit-learn, LightGBM, spaCy, Sentence-Transformers | Parsing CV, scoring hybride, matching inverse |
+| **Frontend** | React (Vite) | SPA adaptée par rôle |
+| **n8n** | Automatisation de workflows | Relances du circuit de recrutement, détection de dérive IA → déclenchement du ré-entraînement |
+
+## Stack technique
+
+- **Backend :** Node.js · TypeScript · Express · Prisma ORM
+- **Microservice IA :** Python · FastAPI · scikit-learn · LightGBM · spaCy · Sentence-Transformers
+- **Frontend :** React · Vite
+- **Base de données :** PostgreSQL (hébergée sur NeonDB)
+- **Automatisation :** n8n
+- **Infrastructure :** Docker, GitHub Actions (CI)
+
+## Rôles
+
+9 rôles aux permissions et périmètres de dashboard distincts :
+
+`SUPER_ADMIN` · `MANAGER` · `DIRECTEUR` · `DRH` · `DAF` · `DGA` · `DG` · `RESP_PAIE` · `EMPLOYE`
+
+Plus un acteur externe **Candidat** qui interagit sans compte, exclusivement via des liens tokenisés signés HMAC.
+
+## Modules principaux
+
+<details>
+<summary><b>1. Authentification & utilisateurs</b></summary>
+
+JWT, bcrypt (coût 12), login résistant aux attaques par timing, changement de mot de passe forcé à la première connexion, rate limiting, un seul Manager/Directeur actif par direction imposé à la création.
+</details>
+
+<details>
+<summary><b>2. Circuit de validation du recrutement</b></summary>
+
+6 niveaux de seniorité de poste, chacun associé à une chaîne d'approbation ordonnée. Les circuits sont des données configurables, pas de la logique en dur. Le rôle du créateur est retiré de la chaîne ; un rôle de repli s'applique si le validateur habituel n'a pas de compte actif. Gestion des délais : 48h → relance → 48h → annulation automatique, avec relance manuelle possible par le DRH.
+</details>
+
+<details>
+<summary><b>3. Offres d'emploi & candidatures</b></summary>
+
+Offres publiées à partir de demandes validées, avec un lien de candidature public. Les candidats postulent sans compte (consentement RGPD et IA requis).
+</details>
+
+<details>
+<summary><b>4. Scoring IA des CV (modèle hybride)</b></summary>
+
+`Score = 0.55 × scoring à base de règles + 0.45 × similarité sémantique par embeddings`. Testé sur 300 CV × 12 offres, surpassant chacune des deux approches prise isolément sur l'erreur, la corrélation et le taux d'accord. Inclut des pénalités de disparité de domaine, une explicabilité détaillée par critère, et une classification automatique par percentile dynamique.
+</details>
+
+<details>
+<summary><b>5. Fiche de renseignement candidat</b></summary>
+
+Les candidats doivent compléter une fiche de renseignement (accès par token, public) avant qu'un entretien puisse être planifié. L'absence de réponse entraîne un refus automatique après 48h.
+</details>
+
+<details>
+<summary><b>6. Entretiens</b></summary>
+
+Entretiens RH planifiés directement par les RH ; entretiens techniques/direction via self-scheduling du candidat sur un lien signé, à partir des disponibilités saisies par les interviewers, avec réservation atomique des créneaux pour éviter les conflits.
+</details>
+
+<details>
+<summary><b>7. Contrats & avenants</b></summary>
+
+Génération de contrats PDF, consultables publiquement sans authentification. La signature crée une fiche employé interne (pas un vrai compte — l'employé embauché ne se connecte jamais à la plateforme). Les avenants couvrent confirmation, prolongation, changement de poste/salaire et rupture.
+</details>
+
+<details>
+<summary><b>8. Évaluation de la période d'essai</b></summary>
+
+Deux circuits :
+- **Circuit 1** (sort de l'employé) : saisie RH → évaluation par le manager direct → validation par le directeur de la direction, même direction uniquement
+- **Circuit 2** (modification contractuelle) : le RH propose un avenant → le DRH valide
+
+Les commentaires manager/directeur sont filtrés par confidentialité ; le directeur peut masquer (pas supprimer) l'évaluation du manager.
+</details>
+
+<details>
+<summary><b>9. Dashboard & audit</b></summary>
+
+KPI scopés par rôle (délai, taux de conversion, budget, conformité SLA, coût par recrutement, score qualité, taux de rétention) et journal d'audit complet exportable en CSV.
+</details>
+
+<details>
+<summary><b>10. MLOps</b></summary>
+
+Un workflow hebdomadaire vérifie la dérive de la distribution des scores du modèle IA ; en cas d'alerte, déclenche un pipeline de ré-entraînement automatisé qui ré-entraîne le modèle et ne commit le nouvel artefact que s'il est meilleur.
+</details>
+
+## Démarrage
+
 ```bash
+# Backend
 cd backend
 npm install
-cp .env.example .env   # puis remplir les variables (voir section Configuration)
-npm run dev             # démarre sur le port 5000
-```
+npx prisma generate
+npm run dev
 
-### 3. Frontend
-```bash
-cd frontend
-npm install
-cp .env.example .env
-npm run dev              # démarre sur le port 5173
-```
-
-### 4. IA Service
-```bash
+# Microservice IA
 cd ia_service
-python -m venv venv
-source venv/bin/activate   # ou venv\Scripts\activate sous Windows
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8001
+
+# Frontend
+cd frontend
+npm install
+npm run dev
 ```
 
-### 5. Avec Docker Compose (tous les services)
-```bash
-docker-compose up --build
-```
+Chaque service dispose également d'un `Dockerfile` ; voir `docker-compose.yml` (si présent) pour lancer toute la stack (backend, microservice IA, frontend, n8n, Redis) en conteneurs.
 
-## Configuration (variables d'environnement)
-
-<details>
-<summary>Backend (.env)</summary>
-
-```dotenv
-PORT=5000
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=your_db_name
-DB_USER=postgres
-DB_PASSWORD=your_db_password
-JWT_SECRET=your_jwt_secret_key
-JWT_EXPIRE=7d
-FRONTEND_URL=http://localhost:5173
-IA_SERVICE_URL=http://localhost:8001
-DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
-
-GITHUB_OWNER=your_github_username
-GITHUB_REPO=your_repo_name
-GITHUB_TOKEN=your_github_personal_access_token
-
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_smtp_email@gmail.com
-SMTP_PASS=your_smtp_app_password
-SMTP_FROM="RH Platform" <your_smtp_email@gmail.com>
-
-BACKEND_URL=http://localhost:5000
-VALIDATION_SECRET=your_validation_secret
-N8N_WEBHOOK_SECRET=your_n8n_webhook_secret
-N8N_WEBHOOK_URL_CIRCUIT=http://localhost:5678/webhook/recrutement
-```
-</details>
-
-<details>
-<summary>Frontend (.env)</summary>
-
-```dotenv
-VITE_APP_NAME=RH Platform
-VITE_API_URL=http://localhost:5000/api
-VITE_IA_URL=http://localhost:8001
-```
-</details>
-
-<details>
-<summary>IA Service (.env)</summary>
-
-```dotenv
-UPLOAD_DIR=./uploads
-DEV_MODE=true
-DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
-ALLOWED_ORIGINS=http://localhost:5000,http://localhost:3000
-LOG_LEVEL=INFO
-LOKY_MAX_CPU_COUNT=4
-HF_TOKEN=your_huggingface_token
-```
-</details>
-
-> Ne jamais commiter de fichier `.env` réel. Utiliser `.env.example` comme référence.
-
-## Dépendances IA Service
-
-```
-fastapi==0.110.3
-uvicorn[standard]==0.29.0
-pydantic==2.7.1
-asyncpg==0.29.0
-PyMuPDF==1.24.11
-pdfplumber==0.11.1
-spacy==3.7.4
-sentence-transformers==3.0.1
-scikit-learn==1.4.2
-joblib==1.4.2
-numpy==1.26.4
-pytest==8.2.0
-httpx==0.27.0
-python-multipart==0.0.9
-```
-
-## Tests
-
-```bash
-# Backend / Frontend
-npm test
-
-# IA Service
-pytest
-```
+Variables d'environnement requises (`.env`) : `DATABASE_URL`, `JWT_SECRET`, `VALIDATION_SECRET`, `N8N_WEBHOOK_URL_CIRCUIT`, `N8N_WEBHOOK_SECRET`, `SMTP_*`, et `IA_SERVICE_URL`.
 
 ## CI/CD
 
-- **GitHub Actions** : workflow CI (lint, tests, build) opérationnel sur push/PR
-- **Docker Compose** : orchestration multi-services en cours de finalisation (build local)
-- **Docker Hub** : images à publier pour le déploiement sur l'infrastructure de l'entreprise (à venir)
-
-## Réentraînement automatique du modèle IA
-
-Un workflow GitHub Actions (`retrain-ia-model.yml`, déclenché manuellement) automatise le réentraînement du modèle de scoring :
-
-1. Export des données d'entraînement depuis PostgreSQL
-2. Exécution du notebook de réentraînement (papermill)
-3. Marquage des feedbacks utilisés
-4. Push automatique du modèle mis à jour (`structure_model.pkl`) si amélioration
-5. Notification du service IA (FastAPI) une fois le nouveau modèle disponible
-
-Ce workflow est utilisé en complément du circuit n8n (déclenchement de la demande de réentraînement et suivi).
+L'intégration continue tourne à chaque push/PR : vérification de typage + tests backend, suite de tests du microservice IA (poids des modèles ML mis en cache), validation du schéma de base de données, et scan de fuite de secrets. Pas de déploiement continu — le déploiement en production est géré séparément par l'organisation hébergeuse.
 
 
 
